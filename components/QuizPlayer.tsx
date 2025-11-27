@@ -27,7 +27,7 @@ export const QuizPlayer: React.FC<QuizPlayerProps> = ({ quiz, onComplete }) => {
 
   const handleSubmitAnswer = () => {
     if (selectedOption === null) return;
-    
+
     setIsAnswerRevealed(true);
     if (selectedOption === currentQuestion.correctAnswerIndex) {
       setScore(s => s + 1);
@@ -44,7 +44,7 @@ export const QuizPlayer: React.FC<QuizPlayerProps> = ({ quiz, onComplete }) => {
     }
   };
 
-  const finishQuiz = () => {
+  const finishQuiz = async () => {
     setIsFinished(true);
     const result: QuizResult = {
       quizId: quiz.id,
@@ -53,7 +53,11 @@ export const QuizPlayer: React.FC<QuizPlayerProps> = ({ quiz, onComplete }) => {
       total: quiz.questions.length,
       date: new Date().toISOString(),
     };
-    saveQuizResult(result);
+    try {
+      await saveQuizResult(result);
+    } catch (error) {
+      console.error("Failed to save result", error);
+    }
   };
 
   const handleShare = () => {
@@ -68,12 +72,12 @@ export const QuizPlayer: React.FC<QuizPlayerProps> = ({ quiz, onComplete }) => {
     let message = "Keep studying!";
     if (percentage >= 90) message = "Outstanding! A+ material.";
     else if (percentage >= 70) message = "Good job! You know your stuff.";
-    
+
     return (
       <div className="max-w-lg mx-auto w-full pt-10 px-6 animate-fade-in text-center">
         <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 overflow-hidden relative">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-          
+
           <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Trophy className="w-10 h-10 text-yellow-600" />
           </div>
@@ -123,7 +127,7 @@ export const QuizPlayer: React.FC<QuizPlayerProps> = ({ quiz, onComplete }) => {
 
       {/* Progress Bar */}
       <div className="h-2 w-full bg-slate-100 rounded-full mb-8 overflow-hidden">
-        <div 
+        <div
           className="h-full bg-indigo-600 transition-all duration-500 ease-out"
           style={{ width: `${progress}%` }}
         ></div>
@@ -161,11 +165,10 @@ export const QuizPlayer: React.FC<QuizPlayerProps> = ({ quiz, onComplete }) => {
                 disabled={isAnswerRevealed}
                 className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-center ${stateClass}`}
               >
-                <span className={`w-6 h-6 rounded-full border flex items-center justify-center text-xs font-bold mr-4 ${
-                  selectedOption === idx || (isAnswerRevealed && idx === currentQuestion.correctAnswerIndex) 
+                <span className={`w-6 h-6 rounded-full border flex items-center justify-center text-xs font-bold mr-4 ${selectedOption === idx || (isAnswerRevealed && idx === currentQuestion.correctAnswerIndex)
                     ? 'border-transparent bg-current text-white bg-opacity-20' // Simplified styling logic
                     : 'border-slate-300 text-slate-400'
-                }`}>
+                  }`}>
                   {String.fromCharCode(65 + idx)}
                 </span>
                 <span className="flex-1">{option}</span>
@@ -180,7 +183,7 @@ export const QuizPlayer: React.FC<QuizPlayerProps> = ({ quiz, onComplete }) => {
           <div className="mt-6 p-4 bg-slate-50 rounded-lg border border-slate-200 animate-fade-in">
             <div className="flex items-start gap-3">
               <div className="mt-1">
-                {selectedOption === currentQuestion.correctAnswerIndex 
+                {selectedOption === currentQuestion.correctAnswerIndex
                   ? <div className="p-1 bg-green-100 rounded-full"><CheckCircle className="w-4 h-4 text-green-600" /></div>
                   : <div className="p-1 bg-red-100 rounded-full"><XCircle className="w-4 h-4 text-red-600" /></div>
                 }
@@ -201,8 +204,8 @@ export const QuizPlayer: React.FC<QuizPlayerProps> = ({ quiz, onComplete }) => {
       {/* Action Bar */}
       <div className="flex justify-end">
         {!isAnswerRevealed ? (
-          <Button 
-            onClick={handleSubmitAnswer} 
+          <Button
+            onClick={handleSubmitAnswer}
             disabled={selectedOption === null}
             className="w-full sm:w-auto"
           >

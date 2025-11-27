@@ -10,10 +10,27 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ user, setView }) => {
-  const results = getQuizResults().reverse().slice(0, 3); // Get last 3
-  const totalQuizzes = getQuizResults().length;
-  const avgScore = totalQuizzes > 0 
-    ? Math.round(getQuizResults().reduce((acc, curr) => acc + (curr.score / curr.total) * 100, 0) / totalQuizzes)
+  const [results, setResults] = React.useState<QuizResult[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchResults = async () => {
+      try {
+        const data = await getQuizResults();
+        setResults(data);
+      } catch (error) {
+        console.error("Failed to fetch results", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchResults();
+  }, []);
+
+  const recentResults = results.slice().reverse().slice(0, 3);
+  const totalQuizzes = results.length;
+  const avgScore = totalQuizzes > 0
+    ? Math.round(results.reduce((acc, curr) => acc + (curr.score / curr.total) * 100, 0) / totalQuizzes)
     : 0;
 
   return (
@@ -27,8 +44,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, setView }) => {
               Ready to master your lecture notes? Upload a PDF or paste your notes to generate a new quiz instantly.
             </p>
           </div>
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="secondary"
             className="bg-white text-indigo-600 hover:bg-indigo-50 shadow-none border-none whitespace-nowrap"
             onClick={() => setView(AppView.CREATE_QUIZ)}
           >
@@ -79,15 +96,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, setView }) => {
             View All
           </button>
         </div>
-        
+
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          {results.length > 0 ? (
+          {recentResults.length > 0 ? (
             <div className="divide-y divide-slate-100">
-              {results.map((res, idx) => (
+              {recentResults.map((res, idx) => (
                 <div key={idx} className="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm">
-                      {Math.round((res.score/res.total)*100)}%
+                      {Math.round((res.score / res.total) * 100)}%
                     </div>
                     <div>
                       <p className="font-semibold text-slate-800">{res.quizTitle}</p>
