@@ -1,0 +1,5 @@
+{
+  "name": "Notetaker.ai",
+  "description": "An AI-powered teaching assistant that generates strict multiple-choice quizzes from your lecture notes (PDF or Text) to help you study.",
+  "requestFramePermissions": []
+}
