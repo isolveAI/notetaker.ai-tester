@@ -6,3 +6,5 @@ google-cloud-aiplatform
 firebase-admin
 python-multipart
 python-dotenv
+pytest
+httpx
