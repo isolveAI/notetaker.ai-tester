@@ -7,7 +7,9 @@ import json
 import os
 import time
 import uuid
-from backend.firebase_setup import db
+from backend.firebase_setup import get_db
+from fastapi import Depends
+from firebase_admin import firestore
 
 router = APIRouter()
 
@@ -31,7 +33,8 @@ def upload_to_gcs(file: UploadFile, filename: str) -> str:
 @router.post("/generate")
 async def generate_quiz(
     file: Optional[UploadFile] = File(None),
-    text: Optional[str] = Form(None)
+    text: Optional[str] = Form(None),
+    db: firestore.Client = Depends(get_db)
 ):
     if not file and not text:
         raise HTTPException(status_code=400, detail="Either file or text must be provided")
@@ -94,7 +97,7 @@ async def generate_quiz(
         raise HTTPException(status_code=500, detail=f"Failed to generate quiz: {str(e)}")
 
 @router.get("/")
-async def get_quizzes():
+async def get_quizzes(db: firestore.Client = Depends(get_db)):
     quizzes_ref = db.collection('quizzes')
     docs = quizzes_ref.stream()
     return [doc.to_dict() for doc in docs]

@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
-from backend.firebase_setup import db
+from backend.firebase_setup import get_db
 import time
+from firebase_admin import firestore
 
 router = APIRouter()
 
@@ -12,7 +13,7 @@ class QuizResult(BaseModel):
     quizTitle: str
 
 @router.post("/{quiz_id}/results")
-async def save_result(quiz_id: str, result: QuizResult):
+async def save_result(quiz_id: str, result: QuizResult, db: firestore.Client = Depends(get_db)):
     try:
         result_data = result.dict()
         result_data['date'] = time.strftime("%Y-%m-%d")
@@ -28,7 +29,7 @@ async def save_result(quiz_id: str, result: QuizResult):
         raise HTTPException(status_code=500, detail=f"Failed to save result: {str(e)}")
 
 @router.get("/")
-async def get_results():
+async def get_results(db: firestore.Client = Depends(get_db)):
     try:
         results_ref = db.collection('results')
         docs = results_ref.stream()

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Header
 from pydantic import BaseModel
-from firebase_admin import auth
-from backend.firebase_setup import db
+from firebase_admin import auth, firestore
+from backend.firebase_setup import get_db
 
 router = APIRouter()
 
@@ -9,7 +9,7 @@ class LoginRequest(BaseModel):
     idToken: str
 
 @router.post("/login")
-async def login(request: LoginRequest):
+async def login(request: LoginRequest, db: firestore.Client = Depends(get_db)):
     try:
         decoded_token = auth.verify_id_token(request.idToken)
         uid = decoded_token['uid']
